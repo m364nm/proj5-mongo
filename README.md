@@ -7,9 +7,13 @@ A simple Flask app that displays all the dated memos it finds in a MongoDB datab
 The user can add dated memos on a separate page by clicking the Create button. The user
 can also delete memos from their list.
 
-## What you'll add
+## Author
 
+Megan McMillan
 
+## Location on ix
+
+http://ix.cs.uoregon.edu/~mcmillan/htbin/cis399/proj5-mongo/
 
 ## Setting up
 
