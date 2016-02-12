@@ -24,7 +24,7 @@ class TestMemoDB(unittest.TestCase):
             test_date = test_date.replace(days=+1)
             self.assertEqual(flask_main.humanize_arrow_date(test_date), "in {} days".format(h))
 
-    def testSavingMemo(self):
+    def testSavingMemo(self): 
         date = '2016-02-11'
         text = "Sample text"
         result = flask_main.new_memo(date, text)

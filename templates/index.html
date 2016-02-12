@@ -78,10 +78,12 @@
   $(document).ready(function(){
 
     $('#create-memo').click(function() {
+      //redirect to create
       window.location.href='/create';
     });
 
     $('#delete-all').click(function(event) {
+      //delete all selected checkboxes
       var selected = [];
       $('input[type=checkbox]').each(function() {
         if ($(this).is(":checked")) {
