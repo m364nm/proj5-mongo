@@ -87,14 +87,14 @@
         if ($(this).is(":checked")) {
           var val = $(this).val();
           selected.push(val);
-          console.log(val);
+          //console.log(val);
         }
       });
       console.log("selected: " + selected)
       $.getJSON($SCRIPT_ROOT + '_delete',
           {todelete: selected},
           function(data) {
-            alert("Got a response: " + JSON.stringify(data.result));
+            //console.log("Got a response: " + JSON.stringify(data.result));
             window.location.href='/index';
           });
     });

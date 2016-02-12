@@ -21,6 +21,7 @@ from flask import jsonify
 import json
 import bson
 import logging
+import sys
 
 # Date handling
 import arrow # Replacement for datetime, based on moment.js
@@ -60,12 +61,11 @@ app.secret_key = str(uuid.uuid4())
 def index():
   app.logger.debug("Main page entry")
   flask.session['memos'] = get_memos()
-  #for memo in flask.session['memos']:
-#      app.logger.debug("Memo: " + str(memo))
+  for memo in flask.session['memos']:
+      app.logger.debug("Memo: " + str(memo))
   return flask.render_template('index.html')
 
 
-# We don't have an interface for creating memos yet
 @app.route("/create")
 def create():
     app.logger.debug("Create")
@@ -103,14 +103,16 @@ def humanize_arrow_date( date ):
     need to catch 'today' as a special case.
     """
     try:
-        then = arrow.get(date).to('local')
-        now = arrow.utcnow().to('local')
+        then = arrow.get(date)
+        now = arrow.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
         if then.date() == now.date():
             human = "Today"
         else:
             human = then.humanize(now)
             if human == "in a day":
                 human = "Tomorrow"
+            elif human == "a day ago":
+                human = "Yesterday"
     except:
         human = date
     return human
@@ -123,12 +125,14 @@ def save_memo():
   app.logger.debug("Got a JSON request");
   try:
       date = request.args.get('mdate')
+      print(date)
       text = request.args.get('mtext')
+      print(text)
       new_record = new_memo(date, text)
       new_record['_id'] = str(new_record['_id'])
       print("inserted new memo into db")
   except:
-      print("failed at create")
+      app.logger.debug("Failed at create");
 
   return jsonify(result=new_record)
 
@@ -140,14 +144,11 @@ def delete_memo():
   app.logger.debug("Got a JSON request");
   try:
       request_ids = request.args
-      print(request_ids)
       memos = request_ids.getlist("todelete[]")
-      print(memos)
       results = remove_memos(memos)
   except:
-      print("failed at delete")
+      app.logger.debug("Failed at delete");
 
-  print(results)
   return jsonify(result=results)
 
 #############
@@ -155,33 +156,55 @@ def delete_memo():
 # Functions available to the page code above
 #
 ##############
+
 def new_memo(date, text):
-    record = { "type": "dated_memo",
-               "date":  arrow.get(date).naive,
-               "text": text
-              }
-    collection.insert(record)
+    """
+    Inputs: date - simple date, text - string of text
+    Output: record that was created in the mongodb
+    """
+    try:
+        record = { "type": "dated_memo",
+                   "date": arrow.get(date).naive,
+                   "text": text
+                  }
+        collection.insert_one(record)
+    except:
+        print("Unexpected error in new_memo:", sys.exc_info()[0])
+        raise
+
     return record
 
-def remove_memos(objId_list):
-    results = []
-    for obj in objId_list:
-        res = collection.remove( { "_id": ObjectId(obj) })
-        results.append(res)
+def remove_memos(idlist):
+    """
+    Input: idlist - list of objectIds in the form of a string
+    Output: a list of the return values from removing mongodb reccords
+    """
+    try:
+        results = []
+        for obj in idlist:
+            res = collection.delete_one( { "_id": ObjectId(obj) })
+            results.append(res)
+    except:
+        print("Unexpected error in remove_memos:", sys.exc_info()[0])
+        raise
     return results
-
 
 def get_memos():
     """
     Returns all memos in the database, in a form that
     can be inserted directly in the 'session' object.
     """
-    records = [ ]
-    for record in collection.find( { "type": "dated_memo" } ):
-        record['date'] = arrow.get(record['date']).isoformat()
-        record['_id'] = str(record['_id'])
-        records.append(record)
-    return records
+    try:
+        records = [ ]
+        for record in collection.find( { "type": "dated_memo" } ):
+            record['date'] = arrow.get(record['date']).isoformat()
+            record['_id'] = str(record['_id'])
+            records.append(record)
+    except:
+        print("Unexpected error in get_memos:", sys.exc_info()[0])
+        raise
+
+    return sorted(records, key=lambda k: k['date'])
 
 
 if __name__ == "__main__":
