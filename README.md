@@ -13,6 +13,15 @@ can also delete memos from their list.
 
 ## Setting up
 
+Clone the repository, modify environment variables to the environment you're working in, and run
+```
+make install
+```
+Then start the environment
+```
+. env/bin/activate
+```
+
 Use mongoctl on ix to create your database.  On your own computer, 'mongod' is the program that starts the database process.  
 
 You will need to create an administrative user for your database, and a non-administrative user with readWrite access to a
@@ -23,4 +32,4 @@ After the database is set up and running, type the following to run the applicat
 ```
 python3 flask_main.py
 ```
-You can then navigate to localhost:5000 if on your own computer or ix.cs.uoregon.edu:PORTNUM if you're on ix. 
+You can then navigate to localhost:5000 if on your own computer or ix.cs.uoregon.edu:PORTNUM if you're on ix.
