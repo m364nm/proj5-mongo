@@ -35,28 +35,71 @@
     </ul>
   {% endif %}
 {% endwith %}
+<div class="header">
+  <div class='row'>
+    <div class="col-md-2">
+      <h1>Memos</h1>
+    </div>
+    <div class="col-md-2 col-md-offset-1" style="padding-top:25px">
+      <button type="button" class="btn btn-primary" id="create-memo">Create</button>
+    </div>
+  </div> <!--end div row-->
+</div> <!--end div header-->
 
-<h1>Memos</h1>
-
-{% if session.memos %}
+<div class="show-memos" style="padding-top:15px">
+  {% if session.memos %}
     {% for memo in session.memos %}
-  <div class="memo">
-  <div class="row">
-  <div class="col-md-2">
-    {{ memo.date | humanize }}
-  </div>
-  <div class="col-md-10">
-    {{ memo.text }}
-  </div>
-  </div> <!-- row -->
-  </div> <!-- memo -->
-  {% endfor %}
-{% else %}
-  <p>No memos for you. </p>  
-{% endif %}
+    <div class="memo">
+      <div class="row">
+        <div class="col-md-1" style="padding-right:0px; padding-left:50px">
+          <input type="checkbox" name="delete" value="{{ memo._id }}" class="checkboxes">
+        </div>
+        <div class="col-md-2">
+          {{ memo.date | humanize }}
+        </div>
+        <div class="col-md-4">
+          {{ memo.text }}
+        </div>
+      </div> <!-- row -->
+    </div> <!-- memo -->
+    {% endfor %}
+  {% else %}
+    <p>No memos for you. </p>
+  {% endif %}
+</div>
 
- 
+<div class="col-md-1" style="padding-top:5px; padding-left:0px">
+  <button type="button" class="btn btn-primary" id="delete-all">Delete</button>
+</div>
 
+<script type="text/javascript">
+  $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+
+  $(document).ready(function(){
+
+    $('#create-memo').click(function() {
+      window.location.href='/create';
+    });
+
+    $('#delete-all').click(function(event) {
+      var selected = [];
+      $('input[type=checkbox]').each(function() {
+        if ($(this).is(":checked")) {
+          var val = $(this).val();
+          selected.push(val);
+          console.log(val);
+        }
+      });
+      console.log("selected: " + selected)
+      $.getJSON($SCRIPT_ROOT + '_delete',
+          {todelete: selected},
+          function(data) {
+            alert("Got a response: " + JSON.stringify(data.result));
+            window.location.href='/index';
+          });
+    });
+  });
+</script>
 </div> <!-- container -->
 </body>
 </html>

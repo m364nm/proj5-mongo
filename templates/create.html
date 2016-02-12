@@ -24,31 +24,76 @@
 </head>
 <body>
 <div class="container">
-<h1>Create a Memo</h1>
 
-<!-- Flashed messages before content -->
-{% with messages = get_flashed_messages() %}
-  {% if messages %}
-    <ul class=flashes>
-    {% for message in messages %}
-      <li>{{ message }}</li>
-    {% endfor %}
-    </ul>
-  {% endif %}
-{% endwith %}
+  <h1>Create a Memo</h1>
 
-<form method="PUT" action="_create">
-<div class="row">
-    <div class="col-md-2">
-    <input type="text" class="form-control"
-     name="Date" value=""/>
-  </div>
-  <div class="col-md-10">
-    <input type="text" class="form-control"
-      name="Memo" value="Memo" />
-  </div>
- </div>
-</form>
-</div> 
+  <!-- Flashed messages before content -->
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <ul class=flashes>
+      {% for message in messages %}
+        <li>{{ message }}</li>
+      {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+
+  <form role="form" class="memo_form">
+    <div class="row">
+        <div class="col-md-3">
+        <input type="date" class="form-control"
+         id="Date" value=""/>
+      </div>
+    </div>
+    <div class="row">
+       <div class="col-md-6">
+         <input type="text" class="new-memo form-control"
+           id="Memo" value="Memo" />
+       </div>
+    </div>
+    <button type="submit" class="btn btn-primary" id="save-memo">Submit</button>
+    <button type="button" class="btn btn-primary" id="cancel-memo">Cancel</button>
+  </form>
+
+  <script type="text/javascript">
+    $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+
+    $(document).ready(function(){
+    // Do the following when the page is finished loading
+      console.log("document ready and listening")
+      $('#save-memo').click(
+        function(event) {
+          event.preventDefault();
+          var date = $('#Date').val();
+          var text = $('#Memo').val();
+          console.log(date);
+          console.log(text);
+          if (date != "") {
+            console.log("date is not null or empty");
+            $.getJSON($SCRIPT_ROOT + '/_create',
+                // The object to pass to the servers
+                { mdate: date, mtext: text },
+                // The function to call with the response
+                function(data) {
+                  var times = data.result;
+                  console.log("Got a response: " +  JSON.stringify(times));
+                  window.location.href='/index';
+              }); // End of the call to getJSON
+          } else {
+            console.log("date is empty");
+            alert("You must fill in a date for your memo.");
+          }
+        }
+      );
+
+      $('#cancel-memo').click(function() {
+        window.location.href='/index';
+      });
+
+
+    });
+  </script>
+
+</div>
 </body>
 </html>
